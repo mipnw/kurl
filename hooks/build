@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Docker Hub Autobuild's build hook
+#
+# Advanced options for docker hub autobuild is documented at 
+# https://docs.docker.com/docker-hub/builds/advanced/
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Autobuild's build action is our deploy target
+make -f $dir/../Makefile deploy

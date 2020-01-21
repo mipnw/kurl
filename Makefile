@@ -2,8 +2,6 @@ PROJECTNAME := kurl
 
 WORKDIR := /go/src/$(PROJECTNAME)
 GITROOT := $(shell git rev-parse --show-toplevel)
-BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-$(eval COMMIT=$(shell sh -c "git log -1 --pretty=oneline" | awk '{print $$1}'))
 
 .PHONY: help
 help:
@@ -21,7 +19,7 @@ help:
 	@echo 'Options:'
 	@echo '  VERBOSE=1                    increase verbosity'
 	@echo '  DOCKER_REPO=[repository]     the name of a docker repository'
-	@echo '  IMAGE_TAG=[tag]              a docker image tag'
+	@echo '  DOCKER_TAG=[tag]              a docker image tag'
 	@echo '  DOCKER_USER_PATH=[directory] a readonly directory mounted in the dev container at /user,'
 	@echo '                               which enables use of a .bashrc for e.g.'
 	@echo ''
@@ -35,12 +33,20 @@ ifndef DOCKER_REPO
 	$(eval DOCKER_REPO=$(PROJECTNAME))
 endif
 
-ifndef IMAGE_TAG
-	$(eval IMAGE_TAG=local)
+ifndef DOCKER_TAG
+	$(eval DOCKER_TAG=local)
 endif
 
 ifdef DOCKER_USER_PATH
 	$(eval USER_VOLUME=--volume $(DOCKER_USER_PATH):/user:ro)
+endif
+
+ifndef SOURCE_BRANCH
+	$(eval SOURCE_BRANCH=$(shell git rev-parse --abbrev-ref HEAD))
+endif
+
+ifndef SOURCE_COMMIT
+	$(eval SOURCE_COMMIT=$(shell sh -c "git log -1 --pretty=oneline" | awk '{print $$1}'))
 endif
 
 .PHONY: dev
@@ -91,10 +97,10 @@ deploy: dev
 	docker build \
 		--force-rm \
 		-f $(GITROOT)/Dockerfile \
-		-t $(DOCKER_REPO):deploy \
+		-t $(DOCKER_REPO):$(DOCKER_TAG) \
 		--build-arg AUTHOR=$(USER) \
-		--build-arg BRANCH=$(BRANCH) \
-		--build-arg COMMIT=$(COMMIT) \
+		--build-arg BRANCH=$(SOURCE_BRANCH) \
+		--build-arg COMMIT=$(SOURCE_COMMIT) \
 		--target deploy \
 		$(GITROOT) 
 
@@ -103,10 +109,10 @@ deploy-dbg: dev
 	docker build \
 		--force-rm \
 		-f $(GITROOT)/Dockerfile \
-		-t $(DOCKER_REPO):deploy-dbg \
+		-t $(DOCKER_REPO):$(DOCKER_TAG)-dbg \
 		--build-arg AUTHOR=$(USER) \
-		--build-arg BRANCH=$(BRANCH) \
-		--build-arg COMMIT=$(COMMIT) \
+		--build-arg BRANCH=$(SOURCE_BRANCH) \
+		--build-arg COMMIT=$(SOURCE_COMMIT) \
 		--target deploy-dbg \
 		$(GITROOT) 
 
@@ -114,3 +120,5 @@ deploy-dbg: dev
 clean: config
 	-rm -f bin/* 
 	-docker image rm -f $(DOCKER_REPO):dev 1>&2 2>/dev/null
+	-docker image rm -f $(DOCKER_REPO):$(DOCKER_TAG) 1>&2 2>/dev/null
+	-docker image rm -f $(DOCKER_REPO):$(DOCKER_TAG)-dbg 1>&2 2>/dev/null
