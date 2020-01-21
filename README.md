@@ -4,12 +4,14 @@ Command line tool to load test an HTTP endpoint, written in Go.
 
 Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes counts. E.g.
 ```
-Statistics:
-http status code 503: 18
-http status code 429:  7
-http status code 200: 75
-Duration: 3.20s
-Rate: 31.15 requests/sec
+total: 2500
+errors: 0
+status code 200: 1144
+status code 429: 1352
+status code 504: 1
+status code 503: 3
+duration: 5.2719082s
+rate: 474.211596 requests/sec
 ```
 
 # Usage

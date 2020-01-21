@@ -7,8 +7,14 @@ import (
 	"sync"
 )
 
-func worker(wg *sync.WaitGroup, codes *map[int]int) {
-	defer wg.Done()
+func worker(
+	begin *sync.WaitGroup,
+	ready *sync.WaitGroup,
+	complete *sync.WaitGroup, 
+	codes *map[int]int,
+	errorCount *int,
+) {
+	defer complete.Done()
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -18,17 +24,21 @@ func worker(wg *sync.WaitGroup, codes *map[int]int) {
 	}
 
 	req.Header = headerValue.header
-	
+	errorCnt := 0
+	ready.Done()
+
+	begin.Wait()
 	for i := 0; i < requestCount; i++ { 
 		resp, err := client.Do(req)
 		if err != nil {
-			fmt.Printf("Http error: %v\n", err)
-			break
+			errorCnt++
+		} else {
+			(*codes)[resp.StatusCode]++
 		}
-		(*codes)[resp.StatusCode]++
 
 		time.Sleep(time.Duration(waitBetweenRequestsMs) * time.Millisecond)
 	}
+	*errorCount = errorCnt
 }
 
 func main() {
@@ -38,33 +48,50 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Using %d threads and %d req/thread\n\n", threadCount, requestCount)
-
 	var codes []map[int]int
-	var wg sync.WaitGroup
+	errorCount := make([]int,threadCount) // tracks http errors, i.e. we couldn't even get a status code
+
+	var workersReady sync.WaitGroup
+	var workersBegin sync.WaitGroup
+	var workersComplete sync.WaitGroup
 	
-	// Launch one worker per thread
-	start := time.Now()
+	// Launch one worker per thread, all blocked on workersBegin signal
+	workersBegin.Add(1) 
 	for i := 0; i < threadCount; i++ {
 		c := make(map[int]int)
 		codes = append(codes, c)
-		wg.Add(1)
-		go worker(&wg, &c)
+		workersReady.Add(1)
+		workersComplete.Add(1)
+		go worker(&workersBegin, &workersReady, &workersComplete, &c, &errorCount[i])
 	}
-	wg.Wait()
+	// Wait until all workers are ready
+	workersReady.Wait()
+
+	// Release all the workers
+	start := time.Now()
+	workersBegin.Done()
+
+	// Wait until all workers are done
+	workersComplete.Wait()
 	elapsed := time.Since(start)
 
 	// Aggregate statistics
 	sumCodes := make(map[int]int)
+	sumErrors := 0
 	for i := 0; i < threadCount; i++ {
+		sumErrors += errorCount[i]
+
 		for k,v := range codes[i] {
 			sumCodes[k] += v
 		}
 	}
-	fmt.Printf("\nStatistics:\n")
+
+
+	fmt.Printf("total: %d\n", threadCount * requestCount)
+	fmt.Printf("errors: %d\n", sumErrors)
 	for k,v := range sumCodes {
-		fmt.Printf("http status code %d: %d\n", k, v)
+		fmt.Printf("status code %d: %d\n", k, v)
 	}
-	fmt.Printf("Duration: %v\n", elapsed)
-	fmt.Printf("Rate: %f requests/sec\n", float64(threadCount * requestCount) / elapsed.Seconds())
+	fmt.Printf("duration: %v\n", elapsed)
+	fmt.Printf("rate: %f requests/sec\n", float64(threadCount * requestCount) / elapsed.Seconds())
 }
