@@ -13,7 +13,13 @@ Rate: 31.15 requests/sec
 ```
 
 # Build
-`go build -o bin/kurl src/*"`
+
+To build kurl for your architecture:
+```bash
+make shell
+scripts/build.sh --release [--mac|--windows|--linux]
+```
 
 # Usage
+
 See `bin/kurl -help`
