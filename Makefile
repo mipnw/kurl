@@ -1,8 +1,9 @@
 PROJECTNAME := kurl
 
 WORKDIR := /go/src/$(PROJECTNAME)
-THIS_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 GITROOT := $(shell git rev-parse --show-toplevel)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+$(eval COMMIT=$(shell sh -c "git log -1 --pretty=oneline" | awk '{print $$1}'))
 
 .PHONY: help
 help:
@@ -13,6 +14,8 @@ help:
 	@echo '  shell               shells into the development environment'
 	@echo '  build               runs the release build inside the development environment'
 	@echo '  build-dbg           runs the debug build inside the development environment'
+	@echo '  deploy              builds the deployable docker image'
+	@echo '  deploy-dbg          builds the debuggable deployable docker image'
 	@echo '  clean               cleans your localhost of development artifacts'
 	@echo ''
 	@echo 'Options:'
@@ -44,7 +47,7 @@ endif
 dev: config
 	docker build \
 		--force-rm \
-		-f $(THIS_DIR)/Dockerfile \
+		-f $(GITROOT)/Dockerfile \
 		-t $(DOCKER_REPO):dev \
 		--target dev \
 		$(GITROOT)
@@ -82,6 +85,30 @@ build-dbg: dev
 		--hostname devbox \
 		$(DOCKER_REPO):dev \
 		--debug
+
+.PHONY: deploy
+deploy: dev
+	docker build \
+		--force-rm \
+		-f $(GITROOT)/Dockerfile \
+		-t $(DOCKER_REPO):deploy \
+		--build-arg AUTHOR=$(USER) \
+		--build-arg BRANCH=$(BRANCH) \
+		--build-arg COMMIT=$(COMMIT) \
+		--target deploy \
+		$(GITROOT) 
+
+.PHONY: deploy
+deploy-dbg: dev
+	docker build \
+		--force-rm \
+		-f $(GITROOT)/Dockerfile \
+		-t $(DOCKER_REPO):deploy-dbg \
+		--build-arg AUTHOR=$(USER) \
+		--build-arg BRANCH=$(BRANCH) \
+		--build-arg COMMIT=$(COMMIT) \
+		--target deploy-dbg \
+		$(GITROOT) 
 
 .PHONY: clean
 clean: config
