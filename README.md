@@ -12,14 +12,17 @@ Duration: 3.20s
 Rate: 31.15 requests/sec
 ```
 
-# Build
+# Usage
+If you have docker installed, you do not need to build, you can run kurl inside a container:
+```bash
+docker pull mipnw/kurl:latest
+docker run --rm -it mipnw/kurl:latest
+# > kurl -help
+```
 
-To build kurl for your architecture:
+If you have Make and Golang installed, you can build kurl for your workstation's architecture:
 ```bash
 make shell
 scripts/build.sh --release [--mac|--windows|--linux]
+bin/kurl -help
 ```
-
-# Usage
-
-See `bin/kurl -help`
