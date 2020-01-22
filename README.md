@@ -6,14 +6,13 @@ Supports the HTTP GET and POST methods, with headers, but currently no body.
 
 Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes counts. E.g.
 ```
-total: 2500
+total: 2000
 errors: 0
-status code 200: 1144
-status code 429: 1352
-status code 504: 1
-status code 503: 3
-duration: 5.2719082s
-rate: 474.211596 requests/sec
+status code 200: 470 23% (OK)
+status code 429: 1530 76% (Too Many Requests)
+duration: 3.265s
+latency  min: 31ms, avg: 298ms, max: 959ms
+rate: 613 Hz
 ```
 
 # Usage
