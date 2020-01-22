@@ -92,11 +92,11 @@ func main() {
 		}
 	}
 
-
+	// Format output
 	fmt.Printf("total: %d\n", threadCount * requestCount)
 	fmt.Printf("errors: %d\n", sumErrors)
-	for k,v := range sumCodes {
-		fmt.Printf("status code %d: %d\n", k, v)
+	for statusCode,count := range sumCodes {
+		fmt.Printf("status code %d: %d (%s)\n", statusCode, count, http.StatusText(statusCode))
 	}
 	fmt.Printf("duration: %v\n", elapsed)
 	fmt.Printf("rate: %f requests/sec\n", float64(threadCount * requestCount) / elapsed.Seconds())
