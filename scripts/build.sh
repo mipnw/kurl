@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GOMODULE="kurl"
+GOMODULE="github.com/mipnw/kurl"
 
 LOCAL_PATH="/usr/local/bin"
 LOCAL_IMAGES=("kurl")

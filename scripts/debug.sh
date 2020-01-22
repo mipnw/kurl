@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BINARY="/usr/local/bin/kurl"
-GO_PACKAGE="kurl/src/kurl_cmd"
+GO_PACKAGE="github.com/mipnw/kurl/src/kurl_cmd"
 
 set -e
 me=`basename $0`
