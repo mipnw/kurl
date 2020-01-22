@@ -15,6 +15,7 @@ var (
 	threadCount int
 	requestCount int
 	headerValue headersValue
+	bodyFilename string
 )
 
 func usage() {
@@ -30,6 +31,7 @@ func parseCommandLine() {
 	flag.IntVar(&requestCount, "request", 10, "number of http requests per thread")
 	flag.IntVar(&waitBetweenRequestsMs, "wait", 0, "number of milliseconds to wait between requests")
 	flag.BoolVar(&help, "help", false, "print this helper")
+	flag.StringVar(&bodyFilename, "body", "", "path to file containing HTTP request body")
 
 	headerValue.header = make(http.Header)
 	flag.Var(&headerValue, "h", "an HTTP header in the form key=value")

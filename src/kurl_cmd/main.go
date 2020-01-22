@@ -4,6 +4,7 @@ import (
 	"time"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -30,6 +31,16 @@ func worker(
 	}
 
 	req.Header = headerValue.header
+
+	if bodyFilename != "" {
+		file, err := os.Open(bodyFilename)
+		if err != nil {
+			fmt.Printf("Unable to open -body file: %v\n", err)
+			return
+		}
+		req.Body = file
+	}
+
 	errorCnt := 0
 	ready.Done()
 
