@@ -17,7 +17,13 @@ func worker(
 	defer complete.Done()
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
+	var method string
+	if post {
+		method = "POST"
+	} else {
+		method = "GET"
+	}
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		fmt.Printf("Unable to create http request: %v\n", err)
 		return

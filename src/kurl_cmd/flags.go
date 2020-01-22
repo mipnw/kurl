@@ -9,6 +9,7 @@ import (
 
 var (
 	help bool
+	post bool
 	url string
 	waitBetweenRequestsMs int
 	threadCount int
@@ -23,6 +24,7 @@ func usage() {
 }
 
 func parseCommandLine() {
+	flag.BoolVar(&post, "post", false, "use HTTP POST (default is GET)")
 	flag.StringVar(&url, "url", "", "target endpoint")
 	flag.IntVar(&threadCount, "thread", 10, "number of parallel threads")
 	flag.IntVar(&requestCount, "request", 10, "number of http requests per thread")
