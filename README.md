@@ -2,7 +2,7 @@
 
 Command line tool to load test an HTTP endpoint, written in Go.
 
-Currently only supports the HTTP GET method, with headers and no body.
+Supports the HTTP GET and POST methods, with headers, but currently no body.
 
 Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes counts. E.g.
 ```
