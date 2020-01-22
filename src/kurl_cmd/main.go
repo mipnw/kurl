@@ -8,12 +8,17 @@ import (
 	"sync"
 )
 
+type workerResult struct {
+	errorCount int
+	statusCodesCount map[int]int
+	latency []time.Duration
+}
+
 func worker(
 	begin *sync.WaitGroup,
 	ready *sync.WaitGroup,
 	complete *sync.WaitGroup, 
-	codes *map[int]int,
-	errorCount *int,
+	result *workerResult,
 ) {
 	defer complete.Done()
 
@@ -41,21 +46,21 @@ func worker(
 		req.Body = file
 	}
 
-	errorCnt := 0
 	ready.Done()
 
 	begin.Wait()
 	for i := 0; i < requestCount; i++ { 
+		start := time.Now()
 		resp, err := client.Do(req)
+		result.latency[i] = time.Since(start)
 		if err != nil {
-			errorCnt++
+			result.errorCount++
 		} else {
-			(*codes)[resp.StatusCode]++
+			result.statusCodesCount[resp.StatusCode]++
 		}
 
 		time.Sleep(time.Duration(waitBetweenRequestsMs) * time.Millisecond)
 	}
-	*errorCount = errorCnt
 }
 
 func validateCommandLine() bool {
@@ -73,9 +78,10 @@ func main() {
 		return
 	}
 
-	var codes []map[int]int
-	errorCount := make([]int,threadCount) // tracks http errors, i.e. we couldn't even get a status code
+	//var codes []map[int]int
 
+	workerResults := make([]workerResult, threadCount)
+	
 	var workersReady sync.WaitGroup
 	var workersBegin sync.WaitGroup
 	var workersComplete sync.WaitGroup
@@ -83,11 +89,12 @@ func main() {
 	// Launch one worker per thread, all blocked on workersBegin signal
 	workersBegin.Add(1) 
 	for i := 0; i < threadCount; i++ {
-		c := make(map[int]int)
-		codes = append(codes, c)
+		workerResults[i].latency = make([]time.Duration, requestCount)
+		workerResults[i].statusCodesCount = make(map[int]int)
+
 		workersReady.Add(1)
 		workersComplete.Add(1)
-		go worker(&workersBegin, &workersReady, &workersComplete, &c, &errorCount[i])
+		go worker(&workersBegin, &workersReady, &workersComplete, &workerResults[i])
 	}
 	// Wait until all workers are ready
 	workersReady.Wait()
@@ -101,22 +108,44 @@ func main() {
 	elapsed := time.Since(start)
 
 	// Aggregate statistics
+	minLatency := workerResults[0].latency[0]
+	maxLatency := workerResults[0].latency[0]
+	sumLatency := time.Duration(0)
 	sumCodes := make(map[int]int)
 	sumErrors := 0
 	for i := 0; i < threadCount; i++ {
-		sumErrors += errorCount[i]
+		sumErrors += workerResults[i].errorCount
 
-		for k,v := range codes[i] {
+		for _, latency := range workerResults[i].latency {
+			sumLatency += latency
+			if latency < minLatency {
+				minLatency = latency
+			} else if latency > maxLatency {
+				maxLatency = latency
+			}
+		}
+
+		for k,v := range workerResults[i].statusCodesCount {
 			sumCodes[k] += v
 		}
 	}
+	totalRequests := threadCount * requestCount
+	avgLatency := float64(sumLatency.Milliseconds()) / float64(totalRequests)
 
 	// Format output
-	fmt.Printf("total: %d\n", threadCount * requestCount)
+	fmt.Printf("total: %d\n", totalRequests)
 	fmt.Printf("errors: %d\n", sumErrors)
 	for statusCode,count := range sumCodes {
-		fmt.Printf("status code %d: %d (%s)\n", statusCode, count, http.StatusText(statusCode))
+		fmt.Printf("status code %d: %d %d%% (%s)\n", 
+			statusCode, 
+			count, 
+			int(100*float32(count) / float32(totalRequests)),
+			http.StatusText(statusCode))
 	}
-	fmt.Printf("duration: %v\n", elapsed)
-	fmt.Printf("rate: %f requests/sec\n", float64(threadCount * requestCount) / elapsed.Seconds())
+	fmt.Printf("duration: %v\n", elapsed.Round(time.Millisecond))
+	fmt.Printf("latency  min: %v, avg: %.0fms, max: %v\n",
+		minLatency.Round(time.Millisecond), 
+		avgLatency, 
+		maxLatency.Round(time.Millisecond))
+	fmt.Printf("rate: %.0f Hz\n", float64(totalRequests) / elapsed.Seconds())
 }
