@@ -19,12 +19,26 @@ rate: 613 Hz
 If you have docker installed, you do not need to build, you can run kurl inside a container:
 ```bash
 docker pull mipnw/kurl:latest
-docker run --rm -it mipnw/kurl:latest
+docker run --rm mipnw/kurl:latest -help
+```
+or in interactive form:
+```bash
+docker pull mipnw/kurl:latest
+docker run --rm -it --entrypoint /bin/sh mipnw/kurl:latest
 # > kurl -help
 ```
 
+# Build
 If you have Make and Golang installed, you can build kurl and have it binplaced at /usr/local/bin:
 ```bash
 scripts/build.sh --release
 kurl -help
+```
+
+If you have Make and Docker but not Golang, you can build for your platform inside docker:
+```bash
+make shell
+# > scripts/build.sh --release [--mac|--linux|--windows]
+# > exit
+bin/kurl -help
 ```

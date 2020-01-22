@@ -25,6 +25,7 @@ ARG AUTHOR
 ARG BRANCH
 ARG COMMIT
 LABEL Author=$AUTHOR Branch=$BRANCH Commit=$COMMIT
+ENTRYPOINT ["/usr/local/bin/kurl"]
 
 # Build stage: our image built in our dev environment (not meant to be a deployable)
 FROM repository as build-dbg
