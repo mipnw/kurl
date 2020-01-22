@@ -58,9 +58,17 @@ func worker(
 	*errorCount = errorCnt
 }
 
+func validateCommandLine() bool {
+	if url == "" {
+		fmt.Printf("-url argument is required\n\n");
+		return false
+	}
+	return true
+}
+
 func main() {
 	parseCommandLine()
-	if help {
+	if help || !validateCommandLine() {
 		usage()
 		return
 	}
