@@ -2,8 +2,11 @@
 [![Travis Build Status](https://img.shields.io/travis/com/mipnw/kurl)](https://travis-ci.com/mipnw/kurl)
 [![Docker Build Status](https://img.shields.io/docker/cloud/build/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mipnw/kurl)](https://goreportcard.com/report/github.com/mipnw/kurl)
 [![Code coverage](https://img.shields.io/codecov/c/github/mipnw/kurl)](https://codecov.io/gh/mipnw/kurl)
+
+[![Go doc](https://godoc.org/github.com/mipnw/kurl?status.svg)](http://godoc.org/github.com/mipnw/kurl)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mipnw/kurl)](https://goreportcard.com/report/github.com/mipnw/kurl)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/mipnw/kurl)](https://golang.org/)
 
 
 CLI for load testing an HTTP endpoint, along with a reusable Go package exposing the same functionality.
