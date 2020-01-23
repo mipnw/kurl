@@ -1,8 +1,8 @@
-package main
+package kurlcmd
 
 import (
 	"fmt"
-	"github.com/mipnw/kurl"
+	"github.com/mipnw/kurl/kurl"
 	"net/http"
 	"os"
 	"time"

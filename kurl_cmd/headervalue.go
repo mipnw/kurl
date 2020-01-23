@@ -1,4 +1,4 @@
-package main
+package kurlcmd
 
 import (
 	"errors"

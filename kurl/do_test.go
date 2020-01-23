@@ -1,7 +1,7 @@
 package kurl_test
 
 import (
-	"github.com/mipnw/kurl"
+	"github.com/mipnw/kurl/kurl"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
