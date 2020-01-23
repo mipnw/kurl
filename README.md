@@ -7,9 +7,9 @@
 
 Command line tool to load test an HTTP endpoint, written in Go.
 
-Supports the HTTP GET and POST methods, with headers, but currently no body.
+Supports the HTTP GET and POST methods, with headers as command line arguments, and a body from file.
 
-Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes counts. E.g.
+Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes counts and latency statistics. E.g.
 ```
 total: 2000
 errors: 0
