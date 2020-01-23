@@ -1,4 +1,4 @@
-package kurlcmd
+package main
 
 import (
 	"fmt"
