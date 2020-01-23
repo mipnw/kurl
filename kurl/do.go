@@ -1,4 +1,4 @@
-// Kurl provides an API for running concurrent HTTP requests on one endpoint,
+// Package kurl provides an API for running concurrent HTTP requests on one endpoint,
 // while collecting statistics about the errors, status codes and latencies observed.
 package kurl
 
