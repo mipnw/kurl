@@ -1,3 +1,6 @@
+
+// Kurl provides an API for running concurrent HTTP requests on one endpoint,
+// while collecting statistics about the errors, status codes and latencies observed.
 package kurl
 
 import (
@@ -6,6 +9,8 @@ import (
 	"net/http"
 )
 
+// Result is the type of the return value of the Do function.
+// It contains all the statiscics observed about the endpoint during the run.
 type Result struct {
 	RequestsCount int
 	ErrorCount int
@@ -16,6 +21,7 @@ type Result struct {
 	StatusCodesFrequency map[int]int
 }
 
+// Do issues a set of concurrent HTTP requests.
 func Do(
 	settings Settings,
 	request http.Request,
