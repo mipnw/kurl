@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-) 
+)
 
 type headersValue struct {
 	header http.Header
 }
 
 func (this *headersValue) String() string {
-    return fmt.Sprintf("%v", this.header)
+	return fmt.Sprintf("%v", this.header)
 }
 
 func (this *headersValue) Set(value string) error {
@@ -21,5 +21,5 @@ func (this *headersValue) Set(value string) error {
 		return errors.New("Bad header argument")
 	}
 	this.header.Add(arr[0], arr[1])
-    return nil
+	return nil
 }

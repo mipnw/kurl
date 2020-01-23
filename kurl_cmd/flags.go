@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/mipnw/kurl"
 	"flag"
 	"fmt"
+	"github.com/mipnw/kurl"
 	"net/http"
 	"os"
 )
 
 var (
-	settings kurl.Settings
-	help bool
-	post bool
-	url string
-	headerValue headersValue
+	settings     kurl.Settings
+	help         bool
+	post         bool
+	url          string
+	headerValue  headersValue
 	bodyFilename string
 )
 

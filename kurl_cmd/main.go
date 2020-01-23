@@ -1,16 +1,16 @@
 package main
 
 import (
-	"github.com/mipnw/kurl"
-	"time"
 	"fmt"
+	"github.com/mipnw/kurl"
 	"net/http"
 	"os"
+	"time"
 )
 
 func validateCommandLine() bool {
 	if url == "" {
-		fmt.Printf("-url argument is required\n\n");
+		fmt.Printf("-url argument is required\n\n")
 		return false
 	}
 	return true
@@ -59,17 +59,17 @@ func main() {
 	fmt.Printf("total: %d\n", result.RequestsCount)
 	fmt.Printf("errors: %d\n", result.ErrorCount)
 	for statusCode, freq := range result.StatusCodesFrequency {
-		fmt.Printf("status code %d: %d %d%% (%s)\n", 
-			statusCode, 
-			freq, 
-			int(100*float32(freq) / float32(result.RequestsCount)),
+		fmt.Printf("status code %d: %d %d%% (%s)\n",
+			statusCode,
+			freq,
+			int(100*float32(freq)/float32(result.RequestsCount)),
 			http.StatusText(statusCode))
 	}
 	fmt.Printf("duration: %v\n", result.OverallDuration.Round(time.Millisecond))
 	fmt.Printf("latency  min: %v, avg: %v, max: %v\n",
-		result.ResponseLatencyMin.Round(time.Millisecond), 
-		result.ResponseLatencyAvg.Round(time.Millisecond), 
+		result.ResponseLatencyMin.Round(time.Millisecond),
+		result.ResponseLatencyAvg.Round(time.Millisecond),
 		result.ResponseLatencyMax.Round(time.Millisecond))
-	fmt.Printf("rate: %.0f Hz\n", float64(result.RequestsCount) / result.OverallDuration.Seconds())
-	fmt.Printf("200 rate: %.0f Hz\n ", float64(result.StatusCodesFrequency[200]) / result.OverallDuration.Seconds())
+	fmt.Printf("rate: %.0f Hz\n", float64(result.RequestsCount)/result.OverallDuration.Seconds())
+	fmt.Printf("200 rate: %.0f Hz\n ", float64(result.StatusCodesFrequency[200])/result.OverallDuration.Seconds())
 }
