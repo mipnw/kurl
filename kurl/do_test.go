@@ -1,12 +1,12 @@
 package kurl_test
 
 import (
-	"sync"
 	"github.com/mipnw/kurl"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 )
 
@@ -43,7 +43,7 @@ func TestStatusCode429(t *testing.T) {
 
 		var ok bool
 		mux.Lock()
-		ok = (requestCount % 2 == 0)
+		ok = (requestCount%2 == 0)
 		requestCount++
 		mux.Unlock()
 
