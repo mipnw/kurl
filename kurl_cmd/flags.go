@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/mipnw/kurl"
 	"flag"
 	"fmt"
 	"net/http"
@@ -8,12 +9,10 @@ import (
 )
 
 var (
+	settings kurl.Settings
 	help bool
 	post bool
 	url string
-	waitBetweenRequestsMs int
-	threadCount int
-	requestCount int
 	headerValue headersValue
 	bodyFilename string
 )
@@ -27,9 +26,9 @@ func usage() {
 func parseCommandLine() {
 	flag.BoolVar(&post, "post", false, "use HTTP POST (default is GET)")
 	flag.StringVar(&url, "url", "", "target endpoint")
-	flag.IntVar(&threadCount, "thread", 10, "number of parallel threads")
-	flag.IntVar(&requestCount, "request", 10, "number of http requests per thread")
-	flag.IntVar(&waitBetweenRequestsMs, "wait", 0, "number of milliseconds to wait between requests")
+	flag.IntVar(&settings.ThreadCount, "thread", 10, "number of parallel threads")
+	flag.IntVar(&settings.RequestCount, "request", 10, "number of http requests per thread")
+	flag.IntVar(&settings.WaitBetweenRequestsMs, "wait", 0, "number of milliseconds to wait between requests")
 	flag.BoolVar(&help, "help", false, "print this helper")
 	flag.StringVar(&bodyFilename, "body", "", "path to file containing HTTP request body")
 

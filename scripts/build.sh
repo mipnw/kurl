@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GOMODULE="github.com/mipnw/kurl"
+GOMODULE="github.com/mipnw"
 
 LOCAL_PATH="/usr/local/bin"
 LOCAL_IMAGES=("kurl")
@@ -79,7 +79,7 @@ else
                 -o "$LOCAL_PATH/${LOCAL_IMAGES[$i]}" \
                 -mod vendor \
                 -gcflags "all=-N -l" \
-                "$GOMODULE/src/${LOCAL_GO_PACKAGES[$i]}"
+                "$GOMODULE/${LOCAL_GO_PACKAGES[$i]}"
             { set +x; } 2>/dev/null
         else 
             # build the release build
@@ -90,7 +90,7 @@ else
                 -o "$LOCAL_PATH/${LOCAL_IMAGES[$i]}" \
                 -mod vendor \
                 -ldflags="-w -s" \
-                "$GOMODULE/src/${LOCAL_GO_PACKAGES[$i]}"
+                "$GOMODULE/${LOCAL_GO_PACKAGES[$i]}"
             { set +x; } 2>/dev/null
         fi
     done
@@ -107,7 +107,7 @@ if [[ -n $os ]]; then
             -o "$CROSSCOMPILE_PATH/${CROSSCOMPILE_IMAGES[$i]}" \
             -mod vendor \
             -ldflags="-w -s" \
-            "$GOMODULE/src/${CROSSCOMPILE_GO_PACKAGES[$i]}"
+            "$GOMODULE/${CROSSCOMPILE_GO_PACKAGES[$i]}"
         { set +x; } 2>/dev/null
     done
 fi

@@ -1,3 +1,3 @@
-module github.com/mipnw/kurl
+module github.com/mipnw
 
 go 1.13
