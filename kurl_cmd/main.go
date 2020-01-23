@@ -3,15 +3,24 @@ package main
 import (
 	"fmt"
 	"github.com/mipnw/kurl/kurl"
+	"net/url"
 	"net/http"
 	"os"
 	"time"
 )
 
 func validateCommandLine() bool {
-	if url == "" {
-		fmt.Printf("-url argument is required\n\n")
+	_, err := url.ParseRequestURI(endpoint)
+	if err != nil {
+		fmt.Printf("-url argument is required and must be a valid URL\n\n")
 		return false
+	}
+	if bodyFilename != "" {
+		info, err := os.Stat(bodyFilename)
+		if os.IsNotExist(err) || info.IsDir() {
+			fmt.Printf("file %s does not exist\n\n", bodyFilename)
+			return false
+		}
 	}
 	return true
 }
@@ -24,7 +33,7 @@ func makeHTTPRequest() (*http.Request, error) {
 	} else {
 		method = "GET"
 	}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
