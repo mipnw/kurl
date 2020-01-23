@@ -79,7 +79,7 @@ build: dev
 		--entrypoint scripts/build.sh \
 		--hostname devbox \
 		$(DOCKER_REPO):dev \
-		--release
+		--release --binplace
 
 .PHONY: build
 build-dbg: dev
@@ -90,7 +90,7 @@ build-dbg: dev
 		--entrypoint scripts/build.sh \
 		--hostname devbox \
 		$(DOCKER_REPO):dev \
-		--debug
+		--debug --binplace
 
 .PHONY: deploy
 deploy: dev

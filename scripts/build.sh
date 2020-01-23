@@ -22,6 +22,7 @@ function print_help() {
     echo "  --release produce a release build without symbols"
     echo
     echo "Options:"
+    echo "  --binplace place the output binary at /usr/local/bin"
     echo "  --mac     produce a client compiled for mac in addition to the regular build"
     echo "  --win     produce a client compiled for windows in addition to the regular build"
     echo "  --linux   produce a client compile for linux in addition to the regular build"
@@ -30,6 +31,7 @@ function print_help() {
 
 os=
 debug=
+binplace=
 while [[ $# > 0 ]]; do
     case $1 in 
         --help|help )
@@ -42,6 +44,10 @@ while [[ $# > 0 ]]; do
             ;;
         --release )
             debug=0
+            shift 1
+            ;;
+        --binplace )
+            binplace=1
             shift 1
             ;;
         --mac )
@@ -68,33 +74,43 @@ echo
 if [[ -z $debug ]]; then
     print_help
     exit 1
-else
-    for i in ${!LOCAL_IMAGES[@]}; do
-        if [[ $debug == "1" ]]; then
-            # build the debug build
-            echo "Building debug $LOCAL_PATH/${LOCAL_IMAGES[$i]}"
-            set -x
-            env CGO_ENABLED=0 \
-            go build \
-                -o "$LOCAL_PATH/${LOCAL_IMAGES[$i]}" \
-                -mod vendor \
-                -gcflags "all=-N -l" \
-                "$GOMODULE/${LOCAL_GO_PACKAGES[$i]}"
-            { set +x; } 2>/dev/null
-        else 
-            # build the release build
-            echo "Building release $LOCAL_PATH/${LOCAL_IMAGES[$i]}"
-            set -x
-            env CGO_ENABLED=0 \
-            go build \
-                -o "$LOCAL_PATH/${LOCAL_IMAGES[$i]}" \
-                -mod vendor \
-                -ldflags="-w -s" \
-                "$GOMODULE/${LOCAL_GO_PACKAGES[$i]}"
-            { set +x; } 2>/dev/null
-        fi
-    done
 fi
+
+if [[ -z $output && -n $os ]]; then
+    echo "when using the [--mac|--linux|--windows] flag, you must also use the --binplace flag"
+    echo "otherwise we're trying to write both binaries at the same location"
+    exit 1
+fi
+
+# We either binplace, or output at $GOPATH/bin
+output="-o bin/${LOCAL_IMAGES[$i]}"
+[[ -n $binplace ]] && output="-o $LOCAL_PATH/${LOCAL_IMAGES[$i]}"
+
+for i in ${!LOCAL_IMAGES[@]}; do
+    if [[ $debug == "1" ]]; then
+        # build the debug build
+        echo "Building debug $LOCAL_PATH/${LOCAL_IMAGES[$i]}"
+        set -x
+        env CGO_ENABLED=0 \
+        go build \
+            $output \
+            -mod vendor \
+            -gcflags "all=-N -l" \
+            "$GOMODULE/${LOCAL_GO_PACKAGES[$i]}"
+        { set +x; } 2>/dev/null
+    else 
+        # build the release build
+        echo "Building release $LOCAL_PATH/${LOCAL_IMAGES[$i]}"
+        set -x
+        env CGO_ENABLED=0 \
+        go build \
+            $output \
+            -mod vendor \
+            -ldflags="-w -s" \
+            "$GOMODULE/${LOCAL_GO_PACKAGES[$i]}"
+        { set +x; } 2>/dev/null
+    fi
+done
 
 arch=amd64
 if [[ -n $os ]]; then

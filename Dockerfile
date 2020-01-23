@@ -14,7 +14,7 @@ COPY . .
 
 # Build stage: our image built in our dev environment (not meant to be a deployable)
 FROM repository as build
-RUN scripts/build.sh --release 2>&1
+RUN scripts/build.sh --release --binplace 2>&1
 
 # Deploy stage: our built image in a thinner base image
 FROM alpine:latest AS deploy
@@ -27,7 +27,7 @@ ENTRYPOINT ["/usr/local/bin/kurl"]
 
 # Build stage: our image built in our dev environment (not meant to be a deployable)
 FROM repository as build-dbg
-RUN scripts/build.sh --debug 2>&1
+RUN scripts/build.sh --debug --binplace 2>&1
 
 # Deploy stage: our debug built image in a thinner base image
 FROM alpine:latest AS deploy-dbg
