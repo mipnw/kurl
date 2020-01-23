@@ -4,7 +4,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
 [![Code coverage](https://img.shields.io/codecov/c/github/mipnw/kurl)](https://codecov.io/gh/mipnw/kurl)
 
-[![Go doc](https://godoc.org/github.com/mipnw/kurl?status.svg)](http://godoc.org/github.com/mipnw/kurl)
+[![Go doc](https://godoc.org/github.com/mipnw/kurl/kurl?status.svg)](http://godoc.org/github.com/mipnw/kurl/kurl)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mipnw/kurl)](https://goreportcard.com/report/github.com/mipnw/kurl)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/mipnw/kurl)](https://golang.org/)
 
