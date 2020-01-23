@@ -39,7 +39,7 @@ func Do(
 		workersComplete.Add(1)
 		go worker(
 			&settings,
-			request, // a copy of the request on the stack, each worker can independantly modify the request inside http.Do
+			request, // a copy of the request on the stack, each worker can independently modify the request inside http.Do
 			&workersBegin,
 			&workersReady,
 			&workersComplete,
