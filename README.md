@@ -1,7 +1,7 @@
 # kurl
 [![Docker Build Status](https://img.shields.io/docker/cloud/build/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/mipnw/kurl)](https://goreportcard.com/report/github.com/mipnw/kurl)
 
 
 Command line tool to load test an HTTP endpoint, written in Go.
