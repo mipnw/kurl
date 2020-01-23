@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+// Settings parameterizes the behavior the kurl.Do function.
+type Settings struct {
+	Verbose               bool
+	WaitBetweenRequestsMs int
+	ThreadCount           int
+	RequestCount          int
+}
+
 // Result is the type of the return value of the Do function.
 // It contains all the statiscics observed about the endpoint during the run.
 type Result struct {
