@@ -35,7 +35,7 @@ docker run --rm -it --entrypoint /bin/sh mipnw/kurl:latest
 ```
 
 # Build
-If you have Make and Golang installed, you can build kurl and have it binplaced at /usr/local/bin:
+If you have Make and Golang installed, you can build kurl:
 ```bash
 scripts/build.sh --release
 kurl -help
@@ -44,7 +44,7 @@ kurl -help
 If you have Make and Docker but not Golang, you can build for your platform inside docker:
 ```bash
 make shell
-# > scripts/build.sh --release [--mac|--linux|--windows]
+# > scripts/build.sh --release [--mac|--linux|--windows] --binplace
 # > exit
 bin/kurl -help
 ```
