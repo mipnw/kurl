@@ -1,0 +1,4 @@
+language: go
+go: "1.13"
+script: scripts/build.sh --release
+gobuild_args: -mod vendor -ldflags="-w -s"
