@@ -6,7 +6,7 @@
 [![Code coverage](https://img.shields.io/codecov/c/github/mipnw/kurl)](https://codecov.io/gh/mipnw/kurl)
 
 
-Command line tool to load test an HTTP endpoint, written in Go.
+CLI for load testing an HTTP endpoint, along with a reusable Go package exposing the same functionality.
 
 Supports the HTTP GET and POST methods, with headers as command line arguments, and a body from file.
 
