@@ -1,6 +1,7 @@
 package main
 
 import (
+	"time"
 	"flag"
 	"fmt"
 	"github.com/mipnw/kurl/kurl"
@@ -31,6 +32,9 @@ func parseCommandLine() {
 	flag.IntVar(&settings.WaitBetweenRequestsMs, "wait", 0, "number of milliseconds to wait between requests")
 	flag.BoolVar(&help, "help", false, "print this helper")
 	flag.StringVar(&bodyFilename, "body", "", "path to file containing HTTP request body")
+	
+	var defaultTimeout time.Duration
+	flag.DurationVar(&settings.Timeout, "timeout", defaultTimeout, "http client timeout")
 
 	headerValue.header = make(http.Header)
 	flag.Var(&headerValue, "h", "an HTTP header in the form key=value")

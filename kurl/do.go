@@ -10,6 +10,7 @@ import (
 
 // Settings parameterizes the behavior the kurl.Do function.
 type Settings struct {
+	Timeout				  time.Duration
 	Verbose               bool
 	WaitBetweenRequestsMs int
 	ThreadCount           int

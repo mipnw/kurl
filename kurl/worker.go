@@ -22,7 +22,9 @@ func worker(
 ) {
 	defer complete.Done()
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: settings.Timeout,
+	}
 
 	ready.Done()
 

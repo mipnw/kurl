@@ -71,3 +71,21 @@ func TestStatusCode429(t *testing.T) {
 	assert.Equal(t, 50, result.StatusCodesFrequency[http.StatusOK])
 	assert.Equal(t, 50, result.StatusCodesFrequency[http.StatusTooManyRequests])
 }
+
+func TestUnreachableServer(t *testing.T) {
+	expectedRequest, err := http.NewRequest("POST", "localhost:9999", nil)
+	require.Nil(t, err)
+
+	result := kurl.Do(
+		kurl.Settings{
+			ThreadCount:  5,
+			RequestCount: 10,
+		},
+		*expectedRequest,
+	)
+
+	assert.Equal(t, 50, result.RequestsCount)
+	assert.Equal(t, 50, result.ErrorCount)
+	assert.Equal(t, 0, len(result.StatusCodesFrequency))
+
+}
