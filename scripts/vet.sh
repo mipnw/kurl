@@ -1,9 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 fmt=`go fmt ./...`
-echo $fmt
-[[ -n $fmt ]] && exit 1
+[[ -n $fmt ]] && echo "go fmt error:\n$fmt" && exit 1
 
 vet=`go vet ./...`
-echo $vet
-[[ -n $vet ]] && exit 1
+[[ -n $vet ]] && echo "go vet error:\n$vet" && exit 1
