@@ -1,7 +1,9 @@
 #!/bin/bash
 
 fmt=`go fmt ./...`
-[[ -n $fmt ]] && echo "go fmt error:\n$fmt" && exit 1
+[[ -n $fmt ]] && printf "go fmt error:\n$fmt\n" && exit 1
 
-vet=`go vet ./...`
-[[ -n $vet ]] && echo "go vet error:\n$vet" && exit 1
+vet=`go vet -mod=vendor ./...`
+[[ -n $vet ]] && printf "go vet error:\n$vet\n" && exit 1
+
+exit 0
