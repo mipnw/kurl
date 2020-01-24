@@ -5,4 +5,5 @@ script:
 - scripts/test.sh -race -coverprofile=coverage.txt -covermode=atomic
 - scripts/vet.sh
 after_success:
+  - scripts/tag.sh
   - bash <(curl -s https://codecov.io/bash)
