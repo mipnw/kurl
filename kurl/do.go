@@ -9,13 +9,16 @@ import (
 	"time"
 )
 
+// Test is a function to run on the response of every http request
+type Test func(response *http.Response, latency time.Duration)
+
 // Settings parameterizes the behavior the kurl.Do function.
 type Settings struct {
-	Timeout               time.Duration
-	Verbose               bool
-	WaitBetweenRequestsMs int
-	ThreadCount           int
-	RequestCount          int
+	Timeout             time.Duration // http client timeout
+	Verbose             bool          // increase kurl's verbosity
+	WaitBetweenRequests time.Duration // delay between requests on each thread
+	ThreadCount         int           // number of threads
+	RequestCount        int           // number of identical and consecutive requests per thread
 }
 
 // Result is the type of the return value of the Do function.
@@ -30,49 +33,26 @@ type Result struct {
 	StatusCodesFrequency map[int]int
 }
 
-// Do issues a set of concurrent identical HTTP requests.
+// Do issues a set of concurrent and identical HTTP requests.
 func Do(
 	settings Settings,
 	request http.Request,
 ) Result {
-	// Prepare thread synchronization
-	var workersReady sync.WaitGroup
-	var workersBegin sync.WaitGroup
-	var workersComplete sync.WaitGroup
-	workersBegin.Add(1)
-
-	// Launch one worker per thread, all blocked on workersBegin signal
-	workerResults := make([]workerResult, settings.ThreadCount)
+	requests := make([]*http.Request, settings.ThreadCount)
 	for i := 0; i < settings.ThreadCount; i++ {
-		workerResults[i].latency = make([]time.Duration, settings.RequestCount)
-		workerResults[i].statusCodesCount = make(map[int]int)
-		workersReady.Add(1)
-		workersComplete.Add(1)
-
-		go worker(
-			&settings,
-			request, // a copy of the request on the stack, each worker can independently modify the request inside http.Do
-			&workersBegin,
-			&workersReady,
-			&workersComplete,
-			&workerResults[i],
-		)
+		requests[i] = &request
 	}
 
-	// Wait until all workers are ready
-	workersReady.Wait()
+	tests := make([]Test, settings.ThreadCount)
 
-	// Release all the workers
-	start := time.Now()
-	workersBegin.Done()
+	result, err := DoManyTest(settings, requests, tests)
 
-	// Wait until all workers are done
-	workersComplete.Wait()
-	elapsed := time.Since(start)
+	// We do not expect err to be non nil, panic if it is, it would mean we have a bug.
+	if err != nil {
+		panic(err)
+	}
 
-	// Aggregate statistics
-	result := aggregateResults(settings, elapsed, workerResults)
-	return result
+	return *result
 }
 
 func aggregateResults(
@@ -109,14 +89,28 @@ func aggregateResults(
 	return result
 }
 
-// DoMany issues a set of concurrent HTTP requests.
+// DoMany issues a set of concurrent HTTP requests, where each thread issues a sequence of requests that
+// can be different from other threads. Use Do if all requests are the same.
 func DoMany(
 	settings Settings,
 	requests []*http.Request, // length of this array must be equal to settings.ThreadCount
 ) (*Result, error) {
+	tests := make([]Test, settings.ThreadCount)
+	return DoManyTest(settings, requests, tests)
+}
 
+// DoManyTest issues a set of concurrent HTTP requests, where each thread issues a sequence of requests that
+// can be different from other threads, and tests each HTTP response.
+func DoManyTest(
+	settings Settings,
+	requests []*http.Request, // length of this array must be equal to settings.ThreadCount
+	tests []Test, // length of this array must be equal to settings.ThreadCount
+) (*Result, error) {
 	if settings.ThreadCount != len(requests) {
 		return nil, errors.New("The length of requests must be equal to settings.ThreadCount")
+	}
+	if settings.ThreadCount != len(tests) {
+		return nil, errors.New("The length of tests must be equal to settings.ThreadCount")
 	}
 
 	// Prepare thread synchronization
@@ -141,6 +135,7 @@ func DoMany(
 		go worker(
 			&settings,
 			*requests[i], // a copy of the request on the stack, each worker can independently modify the request inside http.Do
+			tests[i],
 			&workersBegin,
 			&workersReady,
 			&workersComplete,

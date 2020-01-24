@@ -15,6 +15,7 @@ type workerResult struct {
 func worker(
 	settings *Settings,
 	request http.Request,
+	test Test,
 	begin *sync.WaitGroup,
 	ready *sync.WaitGroup,
 	complete *sync.WaitGroup,
@@ -30,15 +31,27 @@ func worker(
 
 	begin.Wait()
 	for i := 0; i < settings.RequestCount; i++ {
+
 		start := time.Now()
 		resp, err := client.Do(&request)
 		result.latency[i] = time.Since(start)
+
+		start = time.Now()
 		if err != nil {
 			result.errorCount++
 		} else {
 			result.statusCodesCount[resp.StatusCode]++
 		}
 
-		time.Sleep(time.Duration(settings.WaitBetweenRequestsMs) * time.Millisecond)
+		// Run the test if we have one
+		if test != nil {
+			test(resp, result.latency[i])
+		}
+
+		// Delay this thread if we need to wait between requests
+		elapsedSinceLastRequest := time.Since(start)
+		if elapsedSinceLastRequest < settings.WaitBetweenRequests {
+			time.Sleep(settings.WaitBetweenRequests - elapsedSinceLastRequest)
+		}
 	}
 }

@@ -29,7 +29,7 @@ func parseCommandLine() {
 	flag.StringVar(&endpoint, "url", "", "target endpoint")
 	flag.IntVar(&settings.ThreadCount, "thread", 10, "number of parallel threads")
 	flag.IntVar(&settings.RequestCount, "request", 10, "number of http requests per thread")
-	flag.IntVar(&settings.WaitBetweenRequestsMs, "wait", 0, "number of milliseconds to wait between requests")
+	flag.DurationVar(&settings.WaitBetweenRequests, "wait", 0, "how long to wait between requests on each thread")
 	flag.BoolVar(&help, "help", false, "print this helper")
 	flag.StringVar(&bodyFilename, "body", "", "path to file containing HTTP request body")
 
