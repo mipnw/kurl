@@ -1,0 +1,3 @@
+#!/bin/sh
+
+go test -mod vendor -ldflags="-w -s" $@ ./...

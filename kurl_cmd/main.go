@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/mipnw/kurl/kurl"
-	"net/url"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )

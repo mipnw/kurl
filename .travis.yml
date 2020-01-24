@@ -2,6 +2,6 @@ language: go
 go: "1.13"
 script: 
 - scripts/build.sh --release
-- go test -race -mod vendor -ldflags="-w -s" -coverprofile=coverage.txt -covermode=atomic ./...
+- scripts/test.sh -race -coverprofile=coverage.txt -covermode=atomic
 after_success:
   - bash <(curl -s https://codecov.io/bash)

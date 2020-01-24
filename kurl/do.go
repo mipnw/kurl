@@ -3,6 +3,7 @@
 package kurl
 
 import (
+	"errors"
 	"net/http"
 	"sync"
 	"time"
@@ -10,7 +11,7 @@ import (
 
 // Settings parameterizes the behavior the kurl.Do function.
 type Settings struct {
-	Timeout				  time.Duration
+	Timeout               time.Duration
 	Verbose               bool
 	WaitBetweenRequestsMs int
 	ThreadCount           int
@@ -29,23 +30,25 @@ type Result struct {
 	StatusCodesFrequency map[int]int
 }
 
-// Do issues a set of concurrent HTTP requests.
+// Do issues a set of concurrent identical HTTP requests.
 func Do(
 	settings Settings,
 	request http.Request,
 ) Result {
-	// Launch one worker per thread, all blocked on workersBegin signal
-	workerResults := make([]workerResult, settings.ThreadCount)
+	// Prepare thread synchronization
 	var workersReady sync.WaitGroup
 	var workersBegin sync.WaitGroup
 	var workersComplete sync.WaitGroup
 	workersBegin.Add(1)
+
+	// Launch one worker per thread, all blocked on workersBegin signal
+	workerResults := make([]workerResult, settings.ThreadCount)
 	for i := 0; i < settings.ThreadCount; i++ {
 		workerResults[i].latency = make([]time.Duration, settings.RequestCount)
 		workerResults[i].statusCodesCount = make(map[int]int)
-
 		workersReady.Add(1)
 		workersComplete.Add(1)
+
 		go worker(
 			&settings,
 			request, // a copy of the request on the stack, each worker can independently modify the request inside http.Do
@@ -68,6 +71,15 @@ func Do(
 	elapsed := time.Since(start)
 
 	// Aggregate statistics
+	result := aggregateResults(settings, elapsed, workerResults)
+	return result
+}
+
+func aggregateResults(
+	settings Settings,
+	elapsed time.Duration,
+	workerResults []workerResult,
+) Result {
 	result := Result{
 		RequestsCount:        settings.ThreadCount * settings.RequestCount,
 		OverallDuration:      elapsed,
@@ -95,4 +107,59 @@ func Do(
 	}
 	result.ResponseLatencyAvg = time.Duration(int64(float64(sumLatency.Milliseconds())/float64(result.RequestsCount))) * time.Millisecond
 	return result
+}
+
+// DoMany issues a set of concurrent HTTP requests.
+func DoMany(
+	settings Settings,
+	requests []*http.Request, // length of this array must be equal to settings.ThreadCount
+) (*Result, error) {
+
+	if settings.ThreadCount != len(requests) {
+		return nil, errors.New("The length of requests must be equal to settings.ThreadCount")
+	}
+
+	// Prepare thread synchronization
+	var workersReady sync.WaitGroup
+	var workersBegin sync.WaitGroup
+	var workersComplete sync.WaitGroup
+	workersBegin.Add(1)
+
+	// Launch one worker per thread, all blocked on workersBegin signal
+	workerResults := make([]workerResult, settings.ThreadCount)
+	for i := 0; i < settings.ThreadCount; i++ {
+		workerResults[i].latency = make([]time.Duration, settings.RequestCount)
+		workerResults[i].statusCodesCount = make(map[int]int)
+
+		workersReady.Add(1)
+		workersComplete.Add(1)
+
+		if requests[i] == nil {
+			return nil, errors.New("The requests array cannot contain nil pointers")
+		}
+
+		go worker(
+			&settings,
+			*requests[i], // a copy of the request on the stack, each worker can independently modify the request inside http.Do
+			&workersBegin,
+			&workersReady,
+			&workersComplete,
+			&workerResults[i],
+		)
+	}
+
+	// Wait until all workers are ready
+	workersReady.Wait()
+
+	// Release all the workers
+	start := time.Now()
+	workersBegin.Done()
+
+	// Wait until all workers are done
+	workersComplete.Wait()
+	elapsed := time.Since(start)
+
+	// Aggregate statistics
+	result := aggregateResults(settings, elapsed, workerResults)
+	return &result, nil
 }
