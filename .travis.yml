@@ -1,9 +1,12 @@
 language: go
-go: "1.13"
-script: 
+go: '1.13'
+script:
 - scripts/build.sh --release
 - scripts/test.sh -race -coverprofile=coverage.txt -covermode=atomic
 - scripts/vet.sh
 after_success:
-  - scripts/travis-release.sh
-  - bash <(curl -s https://codecov.io/bash)
+- scripts/travis-release.sh
+- bash <(curl -s https://codecov.io/bash)
+env:
+  matrix:
+    secure: D9+ZYgSZXQBHJOhtbyKlKwfkAT0JG8bh4fdRmb5rq88ZSWKjkQPk+xxlFP6K1f3qxsAJ0n4349xoRZWUe/uEf0Q11g58pO4rbyI/RfD3TRLpVCTBoG9QejccUwPhGS4i0d62A+/hTpulX0Dqtq6IalXPbt6uf3jnMhh7+Atm75ltuoDWtERrVG6P8k+unSTGtJ3jIgaMvmMlkzoL76DwPuo+OnMBUr+K1RMInD7eb2ghvYZfY4dsMSVGkEIJdMvwC3hDjJsT/WVcY8C0/s9640m/ORmYipqJp7pZQbTpYhUbXoSs3dN99brr0Zb33iGEN+Pp1/MvEYAwLcaILiYVHEvjjNrih76MKI0CsB641sen8OZzuQp8zQ5Adw/Lh/SZ/als57+Ev9pl2k9A8b/ODfykCvhHu6ZbpAqxHFHmVLKVEEmK6vUcGFXLfqgl2p7d06+qb6WgSUZUOL+VSIC/Cr0xc7neRdtcyqugScJ1nQogs5DZ0RQPnqKBzOAikQo4lBSCUWECyhfm5ZKgl/iZiMTSReXdrmmN/qWTkwb1rubLRw4raKhC2D4CaIRL4eTC3Wxi2s5kID35ghiAu93w162v+SJ5wX6HXiqPiMBWfAoly5atT9hvahvLCUqQShYMotTra5SKqLTRWdLz0ONkttLN22wDy4BqAslbaiS8apI=
