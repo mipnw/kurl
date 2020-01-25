@@ -2,6 +2,13 @@
 [[ -z $TRAVIS ]] && echo "This is not Travis CI. We're not releasing." && exit
 [[ -z $TRAVIS_BUILD_NUMBER || -z $TRAVIS_COMMIT ]] && echo "We're not prepared to release without a build number and commit" && exit
 
+echo FAKE_SECURE=$fake_secure
+echo PWD=$pwd
+ls -l
+git remote -v
+exit
+
+
 config_ssh () {
     # Be very careful not to echo anything to the logs here, no set -x, or set -v, or echo $my_private_key. 
     # Check the Travis logs any time you've edited this section.
