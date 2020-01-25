@@ -27,9 +27,7 @@ type Result struct {
 	RequestsCount        int
 	ErrorCount           int
 	OverallDuration      time.Duration
-	ResponseLatencyMin   time.Duration
-	ResponseLatencyAvg   time.Duration
-	ResponseLatencyMax   time.Duration
+	Latencies            []time.Duration
 	StatusCodesFrequency map[int]int
 }
 
@@ -63,29 +61,16 @@ func aggregateResults(
 	result := Result{
 		RequestsCount:        settings.ThreadCount * settings.RequestCount,
 		OverallDuration:      elapsed,
-		ResponseLatencyMin:   workerResults[0].latency[0],
-		ResponseLatencyMax:   workerResults[0].latency[0],
 		StatusCodesFrequency: make(map[int]int),
 	}
 
-	sumLatency := time.Duration(0)
 	for i := 0; i < settings.ThreadCount; i++ {
 		result.ErrorCount += workerResults[i].errorCount
-
-		for _, latency := range workerResults[i].latency {
-			sumLatency += latency
-			if latency < result.ResponseLatencyMin {
-				result.ResponseLatencyMin = latency
-			} else if latency > result.ResponseLatencyMax {
-				result.ResponseLatencyMax = latency
-			}
-		}
-
 		for statusCode, freq := range workerResults[i].statusCodesCount {
 			result.StatusCodesFrequency[statusCode] += freq
 		}
 	}
-	result.ResponseLatencyAvg = time.Duration(int64(float64(sumLatency.Milliseconds())/float64(result.RequestsCount))) * time.Millisecond
+
 	return result
 }
 
@@ -121,8 +106,9 @@ func DoManyTest(
 
 	// Launch one worker per thread, all blocked on workersBegin signal
 	workerResults := make([]workerResult, settings.ThreadCount)
+	latencies := make([]time.Duration, settings.RequestCount*settings.ThreadCount)
 	for i := 0; i < settings.ThreadCount; i++ {
-		workerResults[i].latency = make([]time.Duration, settings.RequestCount)
+		workerResults[i].latency = latencies[i*settings.RequestCount : ((i + 1) * settings.RequestCount)]
 		workerResults[i].statusCodesCount = make(map[int]int)
 
 		workersReady.Add(1)
@@ -156,5 +142,6 @@ func DoManyTest(
 
 	// Aggregate statistics
 	result := aggregateResults(settings, elapsed, workerResults)
+	result.Latencies = latencies
 	return &result, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/mipnw/kurl/kurl"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -64,6 +65,33 @@ func main() {
 
 	result := kurl.Do(settings, *request)
 
+	// Compute latency stats
+	minLatency := result.Latencies[0]
+	var avgLatency time.Duration
+	maxLatency := result.Latencies[0]
+
+	for i := 0; i < result.RequestsCount; i++ {
+		avgLatency += result.Latencies[i]
+
+		if result.Latencies[i] < minLatency {
+			minLatency = result.Latencies[i]
+		} else if result.Latencies[i] > maxLatency {
+			maxLatency = result.Latencies[i]
+		}
+	}
+	avgLatency = time.Duration(float64(avgLatency.Milliseconds())/float64(result.RequestsCount)) * time.Millisecond
+
+	var stdLatency time.Duration
+	if result.RequestsCount > 1 {
+		var agg int64
+		for i := 0; i < result.RequestsCount; i++ {
+			d := result.Latencies[i] - avgLatency
+			agg += (d.Microseconds() * d.Microseconds())
+		}
+		avg := float64(agg) / float64(result.RequestsCount-1)
+		stdLatency = time.Duration(math.Sqrt(avg)) * time.Microsecond
+	}
+
 	// Format output
 	fmt.Printf("total: %d\n", result.RequestsCount)
 	fmt.Printf("errors: %d\n", result.ErrorCount)
@@ -75,10 +103,11 @@ func main() {
 			http.StatusText(statusCode))
 	}
 	fmt.Printf("duration: %v\n", result.OverallDuration.Round(time.Millisecond))
-	fmt.Printf("latency  min: %v, avg: %v, max: %v\n",
-		result.ResponseLatencyMin.Round(time.Millisecond),
-		result.ResponseLatencyAvg.Round(time.Millisecond),
-		result.ResponseLatencyMax.Round(time.Millisecond))
+	fmt.Printf("latency  min: %v, avg: %v, max: %v (std:%v)\n",
+		minLatency.Round(time.Millisecond),
+		avgLatency.Round(time.Millisecond),
+		maxLatency.Round(time.Millisecond),
+		stdLatency.Round(time.Millisecond))
 	fmt.Printf("rate: %.0f Hz\n", float64(result.RequestsCount)/result.OverallDuration.Seconds())
 	fmt.Printf("200 rate: %.0f Hz\n ", float64(result.StatusCodesFrequency[200])/result.OverallDuration.Seconds())
 }
