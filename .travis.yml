@@ -17,10 +17,3 @@ after_success:
 env:
   global:
     secure: JaEND3UzsETxaUht6qjrR+vNTZTMNz9d37WLUW33WERIloGQjkHbH5j7czbchwaL2nwkavxehpjyw9bkyISVInHwVjEq52XpZdnhPyrwwBFa7FaoiBaue1MD/bFpJcxkBCzKqvXiRT0AI4yznaISF7PBCMayDhrzd9ISfu7cWtacasowa0MTjaXCAY42Ygh7JUwHoSozUF52SsnNqJX3pjOSViekgB2EQbEC0pWoxIcKmhAn4qIWz5A3kFsK1VD23BX9WuKFUHbDR9hoMeaFLjefhaxmh7Ar0Dzu1F9ew4YdKZc1mZ0GD4bOdw8u/zAedlxwWK7pRYzYSxjRSZnCBlVdKOuoJ4te8o8OuVfek30cJ5rs9KtLkwfCIyCg7QxgSo9KvODzN/KpOsYNM0dNgXOvHnXBzQMt4yTA0frmCHrXDQODkPNgbhck7Uw4EK5bn9+6RAw+HSjuJlYR75zMIOxLcUPhT7VYh2cYpeuw18V9rJuoS7E+SRajsFi0egBOzplZg0oBVsrtUwU3t1pOApK/2xkGqyTq3SMwSyYysavUVUKik2Qcq53aXnag7ALeHvXSRf8Th6LPEl5R7cQoB0s5oV+mA512MMlLPaU/398Ekzi/Yhv8VzCbHGUHFu1F+i/2pBy7zGhTQzQF8XkyAcAA9b/v0WLOt1O15J/xzWY=
-deploy:
-  provider: script
-  script: scripts/travis-deploy.sh
-  on:
-    branch: master
-    condition: -z $(git tag --points-at $TRAVIS_COMMIT)
-
