@@ -34,7 +34,7 @@ cleanup () {
     git remote set-url origin $oldorigin
 
     # delete the key
-    rm travis_key >/dev/null 2>&1
+    rm -f travis_key >/dev/null 2>&1
 }
 trap cleanup EXIT
 
