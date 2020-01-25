@@ -9,7 +9,7 @@ config_ssh () {
     echo "Configuring SSH to github.com"
     touch travis_key
     chmod 600 travis_key # remove group readable, we're about to write a secret to a file, who else is on that machine right now?
-    openssl aes-256-cbc -k "$TRAVIS_KEY_PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
+    openssl aes-256-cbc -k "$PRIVATE_KEY_PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
     chmod 400 travis_key
 
     # configure ssh to github.com to use that private key
