@@ -1,6 +1,7 @@
 #!/bin/bash
 [[ -z $TRAVIS ]] && echo "This is not Travis CI. We're not releasing." && return
 [[ -z $TRAVIS_BUILD_NUMBER || -z $TRAVIS_COMMIT ]] && echo "We're not prepared to release without a build number and commit" && return
+[[ -n $TRAVIS_PULL_REQUEST ]] && echo "No releases for pull requests" && return
 
 config_ssh () {
     # Be very careful not to echo anything to the logs here, no set -x, or set -v, or echo $my_private_key. 
