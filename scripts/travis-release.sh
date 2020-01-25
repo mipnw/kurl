@@ -3,8 +3,8 @@
 [[ -z $TRAVIS_BUILD_NUMBER || -z $TRAVIS_COMMIT ]] && echo "We're not prepared to release without a build number and commit" && exit
 
 echo FAKE_SECURE=$fake_secure
-echo PWD=$pwd
-ls -l
+echo PWD=$PWD
+ls -al
 git remote -v
 exit
 
@@ -22,7 +22,7 @@ config_ssh () {
     # configure ssh to github.com to use that private key
     cat >> ~/.ssh/config <<EOF
 Host github.com
-  IdentityFile  $(pwd)/travis_key
+  IdentityFile  $(PWD)/travis_key
 EOF
 
     # add github.com to the known hosts so we're not prompted on the non-interactive Travis CI
@@ -30,6 +30,11 @@ EOF
     known_host_github="github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
     echo $known_host_github > ~/.ssh/known_hosts 
 }
+
+cleanup () {
+    rm travis_key >/dev/null 2>&1
+}
+trap cleanup EXIT
 
 config_git() {
     # configure git remote "origin" to use SSH
@@ -86,3 +91,4 @@ config_ssh
 config_git
 git_tag_incrementversion
 git_tag_buildnumber
+cleanup
