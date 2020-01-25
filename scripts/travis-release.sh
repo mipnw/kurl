@@ -1,17 +1,19 @@
 #!/bin/bash
 [[ -z $TRAVIS ]] && echo "This is not Travis CI. We're not releasing." && exit
 [[ -z $TRAVIS_BUILD_NUMBER || -z $TRAVIS_COMMIT ]] && echo "We're not prepared to release without a build number and commit" && exit
-echo TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST
+[[ -n $TRAVIS_PULL_REQUEST && "$TRAVIS_PULL_REQUEST" != "false" ]] && echo "No releases for pull requests" && exit
 
 config_ssh () {
     # Be very careful not to echo anything to the logs here, none of: set -x, set -v, echo $my_private_key, env, 
     # Check the Travis logs any time you've edited this section.
     
     echo "Configuring SSH to github.com"
+    [[ -z $PASSWORD ]] && echo "PASSWORD is not set!"
     touch travis_key
     chmod 600 travis_key # remove group readable, we're about to write a secret to a file, who else is on that machine right now?
-    openssl aes-256-cbc -k "$PRIV_KEY_PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
+    openssl aes-256-cbc -k "$PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
     chmod 400 travis_key
+    ls -l travis_key
 
     # configure ssh to github.com to use that private key
     echo PWD=$PWD
@@ -27,11 +29,13 @@ EOF
 }
 
 cleanup () {
+    echo "Cleanup"
     rm travis_key >/dev/null 2>&1
 }
 trap cleanup EXIT
 
 config_git() {
+    echo "Configure git"
     # configure git remote "origin" to use SSH
     git remote set-url origin git@github.com:mipnw/kurl.git
 
@@ -41,6 +45,7 @@ config_git() {
 }
 
 git_tag_buildnumber() {
+    echo "Add git tag Travis-$TRAVIS_BUILD_NUMBER"
     git tag Travis-$TRAVIS_BUILD_NUMBER $TRAVIS_COMMIT
     git push --tags
 }
@@ -48,6 +53,8 @@ git_tag_buildnumber() {
 git_tag_incrementversion() {
     # do not increment version tag if this is a Travis build triggered by a new tag
     [[ -n $TRAVIS_TAG ]] && return
+
+    echo "Increment version"
 
     # if $TRAVIS_COMMIT is already tagged, do nothing
     # we risk an infinite CI loop, and we risk parsing a tag that isn't a version
@@ -86,4 +93,3 @@ config_ssh
 config_git
 git_tag_incrementversion
 git_tag_buildnumber
-cleanup
