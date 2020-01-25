@@ -1,21 +1,23 @@
 #!/bin/bash
 [[ -z $TRAVIS ]] && echo "This is not Travis CI. We're not releasing." && exit
 [[ -z $TRAVIS_BUILD_NUMBER || -z $TRAVIS_COMMIT ]] && echo "We're not prepared to release without a build number and commit" && exit
+echo TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST
 
 config_ssh () {
-    # Be very careful not to echo anything to the logs here, no set -x, or set -v, or echo $my_private_key. 
+    # Be very careful not to echo anything to the logs here, none of: set -x, set -v, echo $my_private_key, env, 
     # Check the Travis logs any time you've edited this section.
     
     echo "Configuring SSH to github.com"
     touch travis_key
     chmod 600 travis_key # remove group readable, we're about to write a secret to a file, who else is on that machine right now?
-    openssl aes-256-cbc -k "$PRIVATE_KEY_PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
+    openssl aes-256-cbc -k "$PRIV_KEY_PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
     chmod 400 travis_key
 
     # configure ssh to github.com to use that private key
+    echo PWD=$PWD
     cat >> ~/.ssh/config <<EOF
 Host github.com
-  IdentityFile  $(PWD)/travis_key
+  IdentityFile  $PWD/travis_key
 EOF
 
     # add github.com to the known hosts so we're not prompted on the non-interactive Travis CI
