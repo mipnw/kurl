@@ -2,9 +2,35 @@
 [[ -z $TRAVIS ]] && echo "This is not Travis CI. We're not releasing." && return
 [[ -z $TRAVIS_BUILD_NUMBER || -z $TRAVIS_COMMIT ]] && echo "We're not prepared to release without a build number and commit" && return
 
-git_setup() {
-  git config --local user.email "travis@travis-ci.org"
-  git config --local user.name "Travis CI"
+config_ssh () {
+    # Be very careful not to echo anything to the logs here, no set -x, or set -v, or echo $my_private_key. 
+    # Check the Travis logs any time you've edited this section.
+    
+    echo "Configuring SSH to github.com"
+    touch travis_key
+    chmod 600 travis_key # remove group readable, we're about to write a secret to a file, who else is on that machine right now?
+    openssl aes-256-cbc -k "$TRAVIS_KEY_PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
+    chmod 400 travis_key
+
+    # configure ssh to github.com to use that private key
+    cat >> ~/.ssh/config <<EOF
+Host github.com
+  IdentityFile  $(pwd)/travis_key
+EOF
+
+    # add github.com to the known hosts so we're not prompted on the non-interactive Travis CI
+    # I copied this from my own ~/.ssh/known_host so I know it can be trusted
+    known_host_github="github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
+    echo $known_host_github > ~/.ssh/known_hosts 
+}
+
+config_git() {
+    # configure git remote "origin" to use SSH
+    git remote set-url origin ssh://git@github.com:mipnw/kurl.git
+
+    # configure user name+email
+    git config --local user.email "travis@travis-ci.org"
+    git config --local user.name "Travis CI"
 }
 
 git_tag_buildnumber() {
@@ -49,6 +75,7 @@ git_tag_incrementversion() {
     git push --tags
 }
 
-git_setup
+config_ssh
+config_git
 git_tag_incrementversion
 git_tag_buildnumber
