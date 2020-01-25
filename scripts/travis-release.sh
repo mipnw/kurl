@@ -13,10 +13,8 @@ config_ssh () {
     chmod 600 travis_key # remove group readable, we're about to write a secret to a file, who else is on that machine right now?
     openssl aes-256-cbc -k "$PASSWORD" -d -md sha256 -a -in .id_rsa_travisci_github.priv.enc -out travis_key
     chmod 400 travis_key
-    ls -l travis_key
 
     # configure ssh to github.com to use that private key
-    echo PWD=$PWD
     cat >> ~/.ssh/config <<EOF
 Host github.com
   IdentityFile  $PWD/travis_key
