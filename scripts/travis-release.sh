@@ -28,12 +28,23 @@ EOF
 
 cleanup () {
     echo "Cleanup"
+
+    # reset the remote to HTTPS since git ssh won't work without the key
+    echo "Resetting origin to $oldorigin"
+    git remote set-url origin $oldorigin
+
+    # delete the key
     rm travis_key >/dev/null 2>&1
 }
 trap cleanup EXIT
 
 config_git() {
     echo "Configure git"
+
+    # remember the origin so we can reset it during cleanup
+    oldorigin=$(git remote -v | grep fetch | grep origin | awk '{print $2}')
+    echo "origin was $oldorigin"
+
     # configure git remote "origin" to use SSH
     git remote set-url origin git@github.com:mipnw/kurl.git
 
