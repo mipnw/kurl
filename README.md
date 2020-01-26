@@ -54,10 +54,8 @@ scripts/build.sh --release
 kurl -help
 ```
 
-If you do not have Golang installed, you can still build kurl for your architecture, if have Make and Docker:
+If you do not have Golang installed, and your OS is [Mac, Linux, Windows] and your architecture x86_64, you can still build Kurl if you have Make and Docker.
 ```bash
-make shell
-# > scripts/build.sh --release [--mac|--linux|--windows] --binplace
-# > exit
+make build
 bin/kurl -help
 ```
