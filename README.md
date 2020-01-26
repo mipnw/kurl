@@ -12,12 +12,13 @@
 [![Go Version](https://img.shields.io/github/go-mod/go-version/mipnw/kurl)](https://golang.org/)
 
 
-CLI, as well as reusable Go package, for load testing an HTTP endpoint.
+CLI, and reusable Go package, for load testing an HTTP endpoint.
 
 Supports HTTP GET and POST, with headers and body.
 
 Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes frequencies, and latencies. E.g.
 ```
+# > kurl -url [https://domain/path] -thread 200 -request 10
 total: 2000
 errors: 0
 status code 200: 470 23% (OK)
@@ -37,6 +38,12 @@ docker run --rm mipnw/kurl:latest -help
 You may also use Kurl inside your Go application:
 ```go
 import "github.com/mipnw/kurl/kurl"
+
+// Launch 100 concurrent HTTP requests
+request, _ := http.NewRequest("GET", "https://domain/path", nil)
+result := kurl.Do(
+  kurl.Settings{ThreadCount:100, RequestCount: 1},
+  *request)
 ```
 See [Go Doc](https://godoc.org/github.com/mipnw/kurl/kurl) for API reference.
 
