@@ -70,10 +70,10 @@ git_tag_incrementversion() {
     existing_tags=`git tag --points-at $TRAVIS_COMMIT`
     [[ -n $existing_tags ]] && echo "Commit $TRAVIS_COMMIT is already tagged. Not incrementing version." && return
 
-    # get the most recent tag, and try to parse it as a version tag
-    version=`git describe --abbrev=0 --tags`
+    # get the most recent annotated tag, it should be a version tag and not a build tag
+    version=`git describe --abbrev=0`
 
-    # parse the version tag
+    # try to parse the tag as a version
     version_bits=(${version//./ })
 
     # check that it looks like a version tag (length must be 3)
