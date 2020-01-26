@@ -10,12 +10,13 @@ import (
 )
 
 var (
-	settings     kurl.Settings
-	help         bool
-	post         bool
-	endpoint     string
-	headerValue  headersValue
-	bodyFilename string
+	settings       kurl.Settings
+	help           bool
+	post           bool
+	endpoint       string
+	headerValue    headersValue
+	bodyFilename   string
+	printLatencies bool
 )
 
 func usage() {
@@ -32,6 +33,7 @@ func parseCommandLine() {
 	flag.DurationVar(&settings.WaitBetweenRequests, "wait", 0, "how long to wait between requests on each thread")
 	flag.BoolVar(&help, "help", false, "print this helper")
 	flag.StringVar(&bodyFilename, "body", "", "path to file containing HTTP request body")
+	flag.BoolVar(&printLatencies, "pl", false, "print space-separated millisecond-rounded latencies to stdout")
 
 	var defaultTimeout time.Duration
 	flag.DurationVar(&settings.Timeout, "timeout", defaultTimeout, "http client timeout")

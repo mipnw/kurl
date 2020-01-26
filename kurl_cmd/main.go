@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -65,7 +66,38 @@ func main() {
 
 	result := kurl.Do(settings, *request)
 
-	// Compute latency stats
+	// Error count to stderr
+	if result.ErrorCount != 0 {
+		fmt.Fprintf(os.Stderr, "errors: %d\n", result.ErrorCount)
+	}
+
+	// Formatted output to stdout
+	if printLatencies {
+		// space-separated, millisecond rounted latencies to stdout, for easy loading in your favorite math IDE
+		outputStr := ""
+		for i := 0; i < len(result.Latencies); i++ {
+			outputStr += fmt.Sprintf("%d ", result.Latencies[i].Round(time.Millisecond).Milliseconds())
+		}
+		outputStr = strings.TrimRight(outputStr, " ")
+		fmt.Println(outputStr)
+	} else {
+		// Default formatted output
+		fmt.Printf("total: %d\n", result.RequestsCount)
+		for statusCode, freq := range result.StatusCodesFrequency {
+			fmt.Printf("status code %d: %d %d%% (%s)\n",
+				statusCode,
+				freq,
+				int(100*float32(freq)/float32(result.RequestsCount)),
+				http.StatusText(statusCode))
+		}
+		fmt.Printf("duration: %v\n", result.OverallDuration.Round(time.Millisecond))
+		printLatencyStats(result)
+		fmt.Printf("rate: %.0f Hz\n", float64(result.RequestsCount)/result.OverallDuration.Seconds())
+		fmt.Printf("200 rate: %.0f Hz\n ", float64(result.StatusCodesFrequency[200])/result.OverallDuration.Seconds())
+	}
+}
+
+func printLatencyStats(result kurl.Result) {
 	minLatency := result.Latencies[0]
 	var avgLatency time.Duration
 	maxLatency := result.Latencies[0]
@@ -92,22 +124,9 @@ func main() {
 		stdLatency = time.Duration(math.Sqrt(avg)) * time.Microsecond
 	}
 
-	// Format output
-	fmt.Printf("total: %d\n", result.RequestsCount)
-	fmt.Printf("errors: %d\n", result.ErrorCount)
-	for statusCode, freq := range result.StatusCodesFrequency {
-		fmt.Printf("status code %d: %d %d%% (%s)\n",
-			statusCode,
-			freq,
-			int(100*float32(freq)/float32(result.RequestsCount)),
-			http.StatusText(statusCode))
-	}
-	fmt.Printf("duration: %v\n", result.OverallDuration.Round(time.Millisecond))
 	fmt.Printf("latency  min: %v, avg: %v, max: %v (std:%v)\n",
 		minLatency.Round(time.Millisecond),
 		avgLatency.Round(time.Millisecond),
 		maxLatency.Round(time.Millisecond),
 		stdLatency.Round(time.Millisecond))
-	fmt.Printf("rate: %.0f Hz\n", float64(result.RequestsCount)/result.OverallDuration.Seconds())
-	fmt.Printf("200 rate: %.0f Hz\n ", float64(result.StatusCodesFrequency[200])/result.OverallDuration.Seconds())
 }
