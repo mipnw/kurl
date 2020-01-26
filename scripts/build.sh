@@ -76,7 +76,7 @@ if [[ -z $debug ]]; then
     exit 1
 fi
 
-if [[ -z $output && -n $os ]]; then
+if [[ -z $binplace && -n $os ]]; then
     echo "when using the [--mac|--linux|--windows] flag, you must also use the --binplace flag"
     echo "otherwise we're trying to write both binaries at the same location"
     exit 1
