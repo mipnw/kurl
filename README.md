@@ -9,35 +9,35 @@
 [![Go Version](https://img.shields.io/github/go-mod/go-version/mipnw/kurl)](https://golang.org/)
 
 
-CLI for load testing an HTTP endpoint, along with a reusable Go package exposing the same functionality.
+CLI, as well as reusable Go package, for load testing an HTTP endpoint.
 
-Supports the HTTP GET and POST methods, with headers as command line arguments, and a body from file.
+Supports HTTP GET and POST, with headers and body.
 
-Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes counts and latency statistics. E.g.
+Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes frequencies, and latencies. E.g.
 ```
 total: 2000
 errors: 0
 status code 200: 470 23% (OK)
 status code 429: 1530 76% (Too Many Requests)
 duration: 3.265s
-latency  min: 31ms, avg: 298ms, max: 959ms
+latency  min: 31ms, avg: 298ms, max: 959ms (std: 153ms)
 rate: 613 Hz
 ```
 
 # Usage
-If you have docker installed, you do not need to build, you can run kurl inside a container:
+Provided you have docker installed, you can run the Kurl CLI without having to build it.
 ```bash
 docker pull mipnw/kurl:latest
 docker run --rm mipnw/kurl:latest -help
 ```
-or in interactive form:
-```bash
-docker pull mipnw/kurl:latest
-docker run --rm -it --entrypoint /bin/sh mipnw/kurl:latest
-# > kurl -help
-```
 
-# Build
+You may also use Kurl inside your Go application:
+```go
+import "github.com/mipnw/kurl/kurl"
+```
+See [Go Doc](https://godoc.org/github.com/mipnw/kurl/kurl) for API reference.
+
+#  Build
 If you have Golang installed, you can build kurl:
 ```bash
 scripts/build.sh --release
