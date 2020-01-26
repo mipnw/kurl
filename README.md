@@ -16,16 +16,23 @@ CLI, and reusable Go package, for load testing an HTTP endpoint.
 
 Supports HTTP GET and POST, with headers and body.
 
-Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes frequencies, and latencies. E.g.
+Configurable thread count, request per thread, and delays between requests. Outputs the aggregate HTTP status codes frequencies, and latencies. 
+
+Examples
 ```
 # > kurl -url [https://domain/path] -thread 200 -request 10
 total: 2000
-errors: 0
 status code 200: 470 23% (OK)
 status code 429: 1530 76% (Too Many Requests)
 duration: 3.265s
 latency  min: 31ms, avg: 298ms, max: 959ms (std: 153ms)
 rate: 613 Hz
+```
+
+Use command line argument `-pl` to print all latencies to stdout:
+```
+# > kurl -url [https://domain/path] -pl -thread 1 -request 50
+98 98 97 98 102 109 96 90 102 93 101 99 87 98 91 105 94 107 89 108 95 96 111 94 104 92 98 95 103 86 108 104 94 102 95 95 96 106 97 98 88 91 100 99 93 102 99 98 109 91
 ```
 
 # Usage
