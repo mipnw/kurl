@@ -1,4 +1,7 @@
 # kurl
+![LatestRelease](https://img.shields.io/github/v/release/mipnw/kurl?sort=semver)
+![Last Commit](https://img.shields.io/github/last-commit/mipnw/kurl)
+
 [![Travis Build Status](https://img.shields.io/travis/com/mipnw/kurl)](https://travis-ci.com/mipnw/kurl)
 [![Docker Build Status](https://img.shields.io/docker/cloud/build/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mipnw/kurl)](https://hub.docker.com/r/mipnw/kurl)
