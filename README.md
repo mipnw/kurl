@@ -1,5 +1,5 @@
 # kurl
-![LatestRelease](https://img.shields.io/github/v/release/mipnw/kurl?sort=semver)
+[![LatestRelease](https://img.shields.io/github/v/release/mipnw/kurl?sort=semver)](https://github.com/mipnw/kurl/releases/latest)
 ![Last Commit](https://img.shields.io/github/last-commit/mipnw/kurl)
 
 [![Travis Build Status](https://img.shields.io/travis/com/mipnw/kurl)](https://travis-ci.com/mipnw/kurl)
