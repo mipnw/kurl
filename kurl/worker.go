@@ -39,6 +39,7 @@ func worker(
 		start = time.Now()
 		if err != nil {
 			result.errorCount++
+			result.latency[i] = 0 // flagging so we can remove those later
 		} else {
 			result.statusCodesCount[resp.StatusCode]++
 		}

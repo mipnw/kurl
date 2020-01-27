@@ -34,6 +34,7 @@ func parseCommandLine() {
 	flag.BoolVar(&help, "help", false, "print this helper")
 	flag.StringVar(&bodyFilename, "body", "", "path to file containing HTTP request body")
 	flag.BoolVar(&printLatencies, "pl", false, "print space-separated millisecond-rounded latencies to stdout")
+	flag.BoolVar(&settings.Warm, "warm", false, "Warm up with one HTTP request (not included in the result)")
 
 	var defaultTimeout time.Duration
 	flag.DurationVar(&settings.Timeout, "timeout", defaultTimeout, "http client timeout")

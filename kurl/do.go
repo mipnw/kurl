@@ -19,12 +19,13 @@ type Settings struct {
 	WaitBetweenRequests time.Duration // delay between requests on each thread
 	ThreadCount         int           // number of threads
 	RequestCount        int           // number of identical and consecutive requests per thread
+	Warm                bool          // warm up with 1 http request request
 }
 
 // Result is the type of the return value of the Do function.
 // It contains all the statiscics observed about the endpoint during the run.
 type Result struct {
-	RequestsCount        int
+	CompletedCount       int
 	ErrorCount           int
 	OverallDuration      time.Duration
 	Latencies            []time.Duration
@@ -35,22 +36,12 @@ type Result struct {
 func Do(
 	settings Settings,
 	request http.Request,
-) Result {
+) (*Result, error) {
 	requests := make([]*http.Request, settings.ThreadCount)
 	for i := 0; i < settings.ThreadCount; i++ {
 		requests[i] = &request
 	}
-
-	tests := make([]Test, settings.ThreadCount)
-
-	result, err := DoManyTest(settings, requests, tests)
-
-	// We do not expect err to be non nil, panic if it is, it would mean we have a bug.
-	if err != nil {
-		panic(err)
-	}
-
-	return *result
+	return DoMany(settings, requests)
 }
 
 func aggregateResults(
@@ -59,13 +50,13 @@ func aggregateResults(
 	workerResults []workerResult,
 ) Result {
 	result := Result{
-		RequestsCount:        settings.ThreadCount * settings.RequestCount,
 		OverallDuration:      elapsed,
 		StatusCodesFrequency: make(map[int]int),
 	}
 
 	for i := 0; i < settings.ThreadCount; i++ {
 		result.ErrorCount += workerResults[i].errorCount
+		result.CompletedCount += len(workerResults[i].latency) - workerResults[i].errorCount
 		for statusCode, freq := range workerResults[i].statusCodesCount {
 			result.StatusCodesFrequency[statusCode] += freq
 		}
@@ -127,6 +118,14 @@ func DoManyTest(
 			&workersComplete,
 			&workerResults[i],
 		)
+	}
+
+	// Warm
+	if settings.Warm {
+		_, err := http.Get(requests[0].URL.String())
+		if err != nil {
+			return nil, errors.New("Warm failed: " + err.Error())
+		}
 	}
 
 	// Wait until all workers are ready

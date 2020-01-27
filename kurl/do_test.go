@@ -29,14 +29,15 @@ func TestStatus200(t *testing.T) {
 		RequestCount: 10,
 	}
 
-	result := kurl.Do(
+	result, err := kurl.Do(
 		settings,
 		*expectedRequest,
 	)
-
-	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.RequestsCount)
+	assert.Nil(t, err)
+	require.NotNil(t, result)
 	assert.Equal(t, 0, result.ErrorCount)
-	assert.Equal(t, result.RequestsCount, result.StatusCodesFrequency[http.StatusOK])
+	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.CompletedCount)
+	assert.Equal(t, result.CompletedCount, result.StatusCodesFrequency[http.StatusOK])
 }
 
 func TestStatusCode429(t *testing.T) {
@@ -68,30 +69,32 @@ func TestStatusCode429(t *testing.T) {
 		ThreadCount:  10,
 		RequestCount: 10,
 	}
-	result := kurl.Do(
+	result, err := kurl.Do(
 		settings,
 		*expectedRequest,
 	)
-
-	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.RequestsCount)
+	assert.Nil(t, err)
+	require.NotNil(t, result)
 	assert.Equal(t, 0, result.ErrorCount)
-	assert.Equal(t, result.RequestsCount/2, result.StatusCodesFrequency[http.StatusOK])
-	assert.Equal(t, result.RequestsCount/2, result.StatusCodesFrequency[http.StatusTooManyRequests])
+	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.CompletedCount)
+	assert.Equal(t, result.CompletedCount/2, result.StatusCodesFrequency[http.StatusOK])
+	assert.Equal(t, result.CompletedCount/2, result.StatusCodesFrequency[http.StatusTooManyRequests])
 }
 
 func TestUnreachableServer(t *testing.T) {
 	expectedRequest, err := http.NewRequest("POST", "localhost:9999", nil)
 	require.Nil(t, err)
 
-	result := kurl.Do(
+	result, err := kurl.Do(
 		kurl.Settings{
 			ThreadCount:  5,
 			RequestCount: 10,
 		},
 		*expectedRequest,
 	)
-
-	assert.Equal(t, 50, result.RequestsCount)
+	assert.Nil(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 0, result.CompletedCount)
 	assert.Equal(t, 50, result.ErrorCount)
 	assert.Equal(t, 0, len(result.StatusCodesFrequency))
 
@@ -137,10 +140,11 @@ func TestMany(t *testing.T) {
 		require.Equal(t, settings.RequestCount, seen[i])
 	}
 
-	require.Nil(t, err)
-	require.Equal(t, settings.ThreadCount*settings.RequestCount, result.RequestsCount)
-	require.Equal(t, 0, result.ErrorCount)
-	require.Equal(t, result.RequestsCount, result.StatusCodesFrequency[http.StatusOK])
+	assert.Nil(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 0, result.ErrorCount)
+	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.CompletedCount)
+	assert.Equal(t, result.CompletedCount, result.StatusCodesFrequency[http.StatusOK])
 }
 
 func TestDoManyRequestsLengthMismatch(t *testing.T) {
@@ -156,7 +160,7 @@ func TestDoManyRequestsLengthMismatch(t *testing.T) {
 		requests,
 	)
 
-	assert.NotNil(t, err)
+	require.NotNil(t, err)
 	assert.Equal(t, "The length of requests must be equal to settings.ThreadCount", err.Error())
 	assert.Nil(t, result)
 }
@@ -182,7 +186,7 @@ func TestDoManyTestsLengthMismatch(t *testing.T) {
 		tests,
 	)
 
-	assert.NotNil(t, err)
+	require.NotNil(t, err)
 	assert.Equal(t, "The length of tests must be equal to settings.ThreadCount", err.Error())
 	assert.Nil(t, result)
 }
@@ -200,7 +204,7 @@ func TestDoManyNilRequest(t *testing.T) {
 		requests,
 	)
 
-	assert.NotNil(t, err)
+	require.NotNil(t, err)
 	assert.Equal(t, "The requests array cannot contain nil pointers", err.Error())
 	assert.Nil(t, result)
 }
@@ -250,10 +254,11 @@ func TestDoManyTest(t *testing.T) {
 		require.Equal(t, settings.RequestCount, seen[i])
 	}
 
-	require.Nil(t, err)
-	require.Equal(t, settings.ThreadCount*settings.RequestCount, result.RequestsCount)
-	require.Equal(t, 0, result.ErrorCount)
-	require.Equal(t, result.RequestsCount, result.StatusCodesFrequency[http.StatusOK])
+	assert.Nil(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 0, result.ErrorCount)
+	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.CompletedCount)
+	assert.Equal(t, result.CompletedCount, result.StatusCodesFrequency[http.StatusOK])
 }
 
 func TestWaitBetweenRequests(t *testing.T) {
@@ -280,12 +285,71 @@ func TestWaitBetweenRequests(t *testing.T) {
 		WaitBetweenRequests: 150 * time.Millisecond,
 	}
 
-	result := kurl.Do(
+	result, err := kurl.Do(
 		settings,
 		*expectedRequest,
 	)
-
-	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.RequestsCount)
+	assert.Nil(t, err)
+	require.NotNil(t, result)
 	assert.Equal(t, 0, result.ErrorCount)
-	assert.Equal(t, result.RequestsCount, result.StatusCodesFrequency[http.StatusOK])
+	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.CompletedCount)
+	assert.Equal(t, result.CompletedCount, result.StatusCodesFrequency[http.StatusOK])
+}
+
+func TestWarm(t *testing.T) {
+	lock := sync.Mutex{}
+	seenWarm := false
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+
+		lock.Lock()
+		if !seenWarm {
+			assert.Equal(t, "GET", req.Method, "Server is not receiving test requests before warmup!")
+			seenWarm = true
+		} else {
+			assert.Equal(t, "POST", req.Method, "Server did not receive a warmup!")
+		}
+		lock.Unlock()
+
+		rw.Write([]byte(`OK`))
+	}))
+	defer server.Close()
+
+	request, err := http.NewRequest("POST", server.URL, nil)
+	require.Nil(t, err)
+
+	settings := kurl.Settings{
+		Warm:         true,
+		ThreadCount:  5,
+		RequestCount: 5,
+	}
+
+	result, err := kurl.Do(
+		settings,
+		*request,
+	)
+	assert.Nil(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 0, result.ErrorCount)
+	assert.Equal(t, settings.ThreadCount*settings.RequestCount, result.CompletedCount)
+	assert.Equal(t, result.CompletedCount, result.StatusCodesFrequency[http.StatusOK])
+}
+
+func TestWarmFailed(t *testing.T) {
+	request, err := http.NewRequest("POST", "http://localhost:9999", nil)
+	require.Nil(t, err)
+
+	settings := kurl.Settings{
+		Warm:         true,
+		ThreadCount:  5,
+		RequestCount: 5,
+	}
+
+	result, err := kurl.Do(
+		settings,
+		*request,
+	)
+	require.NotNil(t, err)
+	assert.Equal(t, "Warm failed: ", err.Error()[0:13])
+	assert.Nil(t, result)
 }
