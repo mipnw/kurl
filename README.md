@@ -21,12 +21,11 @@ Configurable thread count, request per thread, and delays between requests. Outp
 Examples
 ```
 # > kurl -url [https://domain/path] -thread 200 -request 10
-total: 2000
-status code 200: 470 23% (OK)
-status code 429: 1530 76% (Too Many Requests)
+total: 2000 613Hz
+http 200 (OK): 470 23% 144Hz
+http 429 (Too Many Requests): 1530 76% 469Hz
 duration: 3.265s
 latency  min: 31ms, avg: 298ms, max: 959ms (std: 153ms)
-rate: 613 Hz
 ```
 
 Use command line argument `-pl` to print all latencies to stdout:
